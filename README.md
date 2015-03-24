@@ -35,63 +35,69 @@ All of the built-in functions have a required `token` parameter and an optional 
 
 Other parameters are specific to the call being made. For example, here's how to call `get_contacts`:
 
-	# A valid access token retrieved via OAuth2
-	token = 'eyJ0eXAiOiJKV1QiLCJhbGciO...'
-	# Maximum 30 results per page.
-	view_size = 30
-	# Set the page from the query parameter.
-	page = 1
-	# Only retrieve display name.
-	fields = [
-	"DisplayName"
-	]
-	# Sort by display name
-	sort = { :sort_field => 'DisplayName', :sort_order => 'ASC' }
-	
-	contacts = outlook_client.get_contacts token,
-	          view_size, page, fields, sort
+```ruby
+# A valid access token retrieved via OAuth2
+token = 'eyJ0eXAiOiJKV1QiLCJhbGciO...'
+# Maximum 30 results per page.
+view_size = 30
+# Set the page from the query parameter.
+page = 1
+# Only retrieve display name.
+fields = [
+"DisplayName"
+]
+# Sort by display name
+sort = { :sort_field => 'DisplayName', :sort_order => 'ASC' }
+
+contacts = outlook_client.get_contacts token,
+          view_size, page, fields, sort
+```
 
 ### Extending functionality
 
 All of the built-in functions wrap the `make_api_call` function. If there is not a built-in function that suits your needs, you can use the `make_api_call` function to implement any API call you want.
 
-    # method (string): The HTTP method to use for the API call. 
-    #                  Must be 'GET', 'POST', 'PATCH', or 'DELETE'
-    # url (string): The URL to use for the API call. Must not contain
-    #               the host. For example: '/api/v1.0/me/messages'
-    # token (string): access token
-    # params (hash) a Ruby hash containing any query parameters needed for the API call
-    # payload (hash): a JSON hash representing the API call's payload. Only used
-    #                 for POST or PATCH.
-    def make_api_call(method, url, token, params = nil, payload = nil)
+```ruby
+# method (string): The HTTP method to use for the API call. 
+#                  Must be 'GET', 'POST', 'PATCH', or 'DELETE'
+# url (string): The URL to use for the API call. Must not contain
+#               the host. For example: '/api/v1.0/me/messages'
+# token (string): access token
+# params (hash) a Ruby hash containing any query parameters needed for the API call
+# payload (hash): a JSON hash representing the API call's payload. Only used
+#                 for POST or PATCH.
+def make_api_call(method, url, token, params = nil, payload = nil)
+```
 
 As an example, here's how the library implements `get_contacts`:
 
-    # token (string): access token
-    # view_size (int): maximum number of results
-    # page (int): What page to fetch (multiple of view size)
-    # fields (array): An array of field names to include in results
-    # sort (hash): { sort_on => field_to_sort_on, sort_order => 'ASC' | 'DESC' }
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
-      request_url = "/api/v1.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts"
-      request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
-      }
-      
-      if not fields.nil?
-        request_params['$select'] = fields.join(',')
-      end 
-      
-      if not sort.nil?
-        request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
-      end
-      
-      get_contacts_response = make_api_call "GET", request_url, token, request_params
-      
-      return JSON.parse(get_contacts_response)
-    end
+```ruby
+# token (string): access token
+# view_size (int): maximum number of results
+# page (int): What page to fetch (multiple of view size)
+# fields (array): An array of field names to include in results
+# sort (hash): { sort_on => field_to_sort_on, sort_order => 'ASC' | 'DESC' }
+# user (string): The user to make the call for. If nil, use the 'Me' constant.
+def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
+  request_url = "/api/v1.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts"
+  request_params = {
+    '$top' => view_size,
+    '$skip' => (page - 1) * view_size
+  }
+  
+  if not fields.nil?
+    request_params['$select'] = fields.join(',')
+  end 
+  
+  if not sort.nil?
+    request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
+  end
+  
+  get_contacts_response = make_api_call "GET", request_url, token, request_params
+  
+  return JSON.parse(get_contacts_response)
+end
+```
 
 Follow the same pattern to implement your own calls.
 
