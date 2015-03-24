@@ -1,8 +1,6 @@
 # RubyOutlook
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ruby_outlook`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+The RubyOutlook gem is a light-weight implementation of the Office 365 [Mail](https://msdn.microsoft.com/office/office365/APi/mail-rest-operations), [Calendar](https://msdn.microsoft.com/office/office365/APi/calendar-rest-operations), and [Contacts](https://msdn.microsoft.com/office/office365/APi/contacts-rest-operations) REST APIs. It provides basic CRUD functionality for all three APIs, along with the ability to extend functionality by making any arbitrary API call.
 
 ## Installation
 
@@ -22,18 +20,94 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Create the client
 
-## Development
+All functionality is accessed via the `Client` class. Create a new instance of the class to use it:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
+    require 'ruby_outlook'
+	outlook_client = RubyOutlook::Client.new
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+In addition, you can set the `enable_fiddler` property on the `Client` to true if you want to capture Fiddler traces. Setting this property to true sets the proxy for all traffic to `http://127.0.0.1:8888` (the default Fiddler proxy value), and turns off SSL verification. Note that if you set this property to true and do not have Fiddler running, all requests will fail.
+
+### Using a built-in function
+
+All of the built-in functions have a required `token` parameter and an optional `user` parameter. The `token` parameter is the OAuth2 access token required for authentication. The `user` parameter is an email address. If passed, the library will make the call to that user's mailbox using the `/Users/user@domain.com/` URL. If omitted, the library will make the call using the `'/Me'` URL.
+
+Other parameters are specific to the call being made. For example, here's how to call `get_contacts`:
+
+	# A valid access token retrieved via OAuth2
+	token = 'eyJ0eXAiOiJKV1QiLCJhbGciO...'
+	# Maximum 30 results per page.
+	view_size = 30
+	# Set the page from the query parameter.
+	page = 1
+	# Only retrieve display name.
+	fields = [
+	"DisplayName"
+	]
+	# Sort by display name
+	sort = { :sort_field => 'DisplayName', :sort_order => 'ASC' }
+	
+	contacts = outlook_client.get_contacts token,
+	          view_size, page, fields, sort
+
+### Extending functionality
+
+All of the built-in functions wrap the `make_api_call` function. If there is not a built-in function that suits your needs, you can use the `make_api_call` function to implement any API call you want.
+
+    # method (string): The HTTP method to use for the API call. 
+    #                  Must be 'GET', 'POST', 'PATCH', or 'DELETE'
+    # url (string): The URL to use for the API call. Must not contain
+    #               the host. For example: '/api/v1.0/me/messages'
+    # token (string): access token
+    # params (hash) a Ruby hash containing any query parameters needed for the API call
+    # payload (hash): a JSON hash representing the API call's payload. Only used
+    #                 for POST or PATCH.
+    def make_api_call(method, url, token, params = nil, payload = nil)
+
+As an example, here's how the library implements `get_contacts`:
+
+    # token (string): access token
+    # view_size (int): maximum number of results
+    # page (int): What page to fetch (multiple of view size)
+    # fields (array): An array of field names to include in results
+    # sort (hash): { sort_on => field_to_sort_on, sort_order => 'ASC' | 'DESC' }
+    # user (string): The user to make the call for. If nil, use the 'Me' constant.
+    def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
+      request_url = "/api/v1.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts"
+      request_params = {
+        '$top' => view_size,
+        '$skip' => (page - 1) * view_size
+      }
+      
+      if not fields.nil?
+        request_params['$select'] = fields.join(',')
+      end 
+      
+      if not sort.nil?
+        request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
+      end
+      
+      get_contacts_response = make_api_call "GET", request_url, token, request_params
+      
+      return JSON.parse(get_contacts_response)
+    end
+
+Follow the same pattern to implement your own calls.
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/ruby_outlook/fork )
+1. Fork it ( https://github.com/jasonjoh/ruby_outlook/fork )a
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Copyright ##
+
+Copyright (c) Microsoft. All rights reserved.
+
+----------
+Connect with me on Twitter [@JasonJohMSFT](https://twitter.com/JasonJohMSFT)
+
+Follow the [Exchange Dev Blog](http://blogs.msdn.com/b/exchangedev/)

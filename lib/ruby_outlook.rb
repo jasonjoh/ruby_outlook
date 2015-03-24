@@ -13,6 +13,14 @@ module RubyOutlook
     attr_writer :api_host
     attr_writer :enable_fiddler
     
+    # method (string): The HTTP method to use for the API call. 
+    #                  Must be 'GET', 'POST', 'PATCH', or 'DELETE'
+    # url (string): The URL to use for the API call. Must not contain
+    #               the host. For example: '/api/v1.0/me/messages'
+    # token (string): access token
+    # params (hash) a Ruby hash containing any query parameters needed for the API call
+    # payload (hash): a JSON hash representing the API call's payload. Only used
+    #                 for POST or PATCH.
     def make_api_call(method, url, token, params = nil, payload = nil)
       
       conn_params = {

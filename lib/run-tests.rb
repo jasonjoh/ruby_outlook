@@ -33,7 +33,7 @@ def do_contact_api_tests(token)
   }'
 
   outlook_client = RubyOutlook::Client.new
-  outlook_client.enable_fiddler = true
+
   # Maximum 30 results per page.
   view_size = 30
   # Set the page from the query parameter.
@@ -112,7 +112,7 @@ def do_mail_api_tests(token)
     "ToRecipients": [
       {
         "EmailAddress": {
-          "Address": "jasonjoh@microsoft.com"
+          "Address": "allieb@contoso.com"
         }
       }
     ],
@@ -126,7 +126,7 @@ def do_mail_api_tests(token)
   }'
   
   outlook_client = RubyOutlook::Client.new
-  outlook_client.enable_fiddler = true
+
   # Maximum 30 results per page.
   view_size = 30
   # Set the page from the query parameter.
@@ -209,7 +209,7 @@ def do_calendar_api_tests(token)
 }'
   
   outlook_client = RubyOutlook::Client.new
-  outlook_client.enable_fiddler = true
+
   
   puts 'Testing GET /me/CalendarView'
   
