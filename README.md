@@ -2,6 +2,8 @@
 
 The RubyOutlook gem is a light-weight implementation of the Office 365 [Mail](https://msdn.microsoft.com/office/office365/APi/mail-rest-operations), [Calendar](https://msdn.microsoft.com/office/office365/APi/calendar-rest-operations), and [Contacts](https://msdn.microsoft.com/office/office365/APi/contacts-rest-operations) REST APIs. It provides basic CRUD functionality for all three APIs, along with the ability to extend functionality by making any arbitrary API call.
 
+For a sample app that uses this gem, see the [Office 365 VCF Import/Export Sample](https://github.com/jasonjoh/o365-vcftool).
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -24,8 +26,10 @@ Or install it yourself as:
 
 All functionality is accessed via the `Client` class. Create a new instance of the class to use it:
 
-    require 'ruby_outlook'
-	outlook_client = RubyOutlook::Client.new
+```ruby
+require 'ruby_outlook'
+outlook_client = RubyOutlook::Client.new
+```
 
 In addition, you can set the `enable_fiddler` property on the `Client` to true if you want to capture Fiddler traces. Setting this property to true sets the proxy for all traffic to `http://127.0.0.1:8888` (the default Fiddler proxy value), and turns off SSL verification. Note that if you set this property to true and do not have Fiddler running, all requests will fail.
 
