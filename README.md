@@ -33,6 +33,45 @@ outlook_client = RubyOutlook::Client.new
 
 In addition, you can set the `enable_fiddler` property on the `Client` to true if you want to capture Fiddler traces. Setting this property to true sets the proxy for all traffic to `http://127.0.0.1:8888` (the default Fiddler proxy value), and turns off SSL verification. Note that if you set this property to true and do not have Fiddler running, all requests will fail.
 
+### Get an OAuth2 token ###
+
+The Outlook APIs require an OAuth2 token for authentication. This gem doesn't handle the OAuth2 flow for you. For a full example that implements the OAuth2 [Authorization Code Grant Flow](https://msdn.microsoft.com/en-us/library/azure/dn645542.aspx), see the [Office 365 VCF Import/Export Sample](https://github.com/jasonjoh/o365-vcftool).
+
+For convenience, here's the relevant steps and code, which uses the [oauth2](https://rubygems.org/gems/oauth2) gem.
+
+- Generate a login URL:
+```ruby
+# Generates the login URL for the app.
+def get_login_url
+  client = OAuth2::Client.new(CLIENT_ID,
+                              CLIENT_SECRET,
+                              :site => "https://login.microsoftonline.com",
+                              :authorize_url => "/common/oauth2/authorize",
+                              :token_url => "/common/oauth2/token")
+
+  login_url = client.auth_code.authorize_url(:redirect_uri => "http://yourapp.com/authorize")
+end
+```
+- User browses to the login URL, authenticates, and provides consent to your app.
+- The user's browser is redirected back to "http://yourapp.com/authorize", a page in your web app that extracts the `code` parameter from the request URL.
+- Exchange the `code` value for an access token:
+```ruby
+# Exchanges an authorization code for a token
+def get_token_from_code(auth_code)
+  client = OAuth2::Client.new(CLIENT_ID,
+                              CLIENT_SECRET,
+                              :site => "https://login.microsoftonline.com",
+                              :authorize_url => "/common/oauth2/authorize",
+                              :token_url => "/common/oauth2/token")
+
+  token = client.auth_code.get_token(auth_code,
+                                     :redirect_uri => "http://yourapp.com/authorize",
+                                     :resource => 'https://outlook.office365.com')
+
+  access_token = token
+end
+```
+
 ### Using a built-in function
 
 All of the built-in functions have a required `token` parameter and an optional `user` parameter. The `token` parameter is the OAuth2 access token required for authentication. The `user` parameter is an email address. If passed, the library will make the call to that user's mailbox using the `/Users/user@domain.com/` URL. If omitted, the library will make the call using the `'/Me'` URL.
