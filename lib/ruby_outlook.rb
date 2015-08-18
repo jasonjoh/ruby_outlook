@@ -1,6 +1,6 @@
 require "ruby_outlook/version"
 require "faraday"
-require "uuidtools"
+require 'securerandom'
 require "json"
 
 module RubyOutlook
@@ -49,7 +49,7 @@ module RubyOutlook
         # Client instrumentation
         # See https://msdn.microsoft.com/EN-US/library/office/dn720380(v=exchg.150).aspx
         'User-Agent' => @user_agent,
-        'client-request-id' => UUIDTools::UUID.timestamp_create.to_str,
+        'client-request-id' => SecureRandom.uuid,
         'return-client-request-id' => "true"
       }
 
