@@ -26,7 +26,8 @@ module RubyOutlook
     # params (hash) a Ruby hash containing any query parameters needed for the API call
     # payload (hash): a JSON hash representing the API call's payload. Only used
     #                 for POST or PATCH.
-    def make_api_call(method, url, token, params = nil, payload = {})
+    # custom_headers (hash) a Ruby hash of additional headers (eg setting 'x-AnchorMailbox' or 'client-request-id')
+    def make_api_call(method, url, token, params = nil, payload = {}, custom_headers=nil)
 
       conn_params = {
         :url => 'https://outlook.office365.com'
@@ -53,6 +54,10 @@ module RubyOutlook
         'return-client-request-id' => "true"
       }
 
+      if custom_headers && custom_headers.class == Hash
+        conn.headers = conn.headers.merge( custom_headers )
+      end
+      
       case method.upcase
         when "GET"
           response = conn.get do |request|
