@@ -256,7 +256,7 @@ module RubyOutlook
       request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user))
 
       unless folder_id.nil?
-        request_url << "/Folders/" << folder_id
+        request_url << "/MailFolders/" << folder_id
       end
 
       request_url << "/Messages"
