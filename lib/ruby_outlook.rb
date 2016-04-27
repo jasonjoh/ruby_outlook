@@ -1,6 +1,7 @@
 require_relative "ruby_outlook/version"
 require_relative "ruby_outlook/configuration"
 require_relative "ruby_outlook/client"
+require_relative "ruby_outlook/error"
 
 module RubyOutlook
   extend Configuration

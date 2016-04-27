@@ -2,6 +2,8 @@ require "faraday"
 require "uuidtools"
 require "json"
 
+# TODO - refactor all methods, move into their own files
+
 module RubyOutlook
   class Client
     attr_accessor(*Configuration::VALID_OPTIONS_KEYS)
@@ -22,7 +24,6 @@ module RubyOutlook
     # payload (hash): a JSON hash representing the API call's payload. Only used
     #                 for POST or PATCH.
     def make_api_call(method, path, params = nil, headers = nil, payload = nil)
-
       request_url = endpoint + path
 
       conn_params = {
@@ -31,7 +32,7 @@ module RubyOutlook
 
       if enable_fiddler
         conn_params[:proxy] = 'http://127.0.0.1:8888'
-        conn_params[:ssl] = {:verify => false}
+        conn_params[:ssl] = { :verify => false }
       end
 
       conn = Faraday.new(conn_params) do |faraday|
@@ -48,12 +49,9 @@ module RubyOutlook
         'User-Agent' => user_agent,
         'client-request-id' => UUIDTools::UUID.timestamp_create.to_str,
         'return-client-request-id' => "true"
-      }.merge!(headers)
+      }.merge!(headers.to_h)
 
-      p host
-      p conn.headers
-      p request_url
-
+      # TODO - symbols
       case method.to_s.upcase
         when "GET"
           response = conn.get do |request|
@@ -77,14 +75,27 @@ module RubyOutlook
           end
       end
 
-      #if response.status >= 300
-      #  return JSON.dump({ 'ruby_outlook_error' => response.status})
-      #end
+      # TODO - remove
+      #p response
+      #p response.headers
+      #puts ".."
+      #p response.body
+      #puts ".."
+      #puts response.env
+      #puts "===\n\n"
 
-      p response.headers
-      puts "==="
-
-      response.body
+      case response.status
+      when 200
+        response.body
+      when 400
+        raise RubyOutlook::ClientError.new(response)
+      when 401
+        raise RubyOutlook::AuthorizationError.new(response)
+      when 500
+        raise RubyOutlook::ServerError.new(response)
+      else
+        raise RubyOutlook::Error.new(response)
+      end
     end
 
     # token (string): access token
@@ -233,39 +244,28 @@ module RubyOutlook
       JSON.parse(get_messages_response)
     end
 
-    def synchonize_messages_for_folder(folder_id, fields = nil, user = nil)
-      request_url  = "/#{user_or_me(user)}/MailFolders/#{folder_id}/messages"
-
-      request_params = {
-        #'$top' => view_size,
-        #'$skip' => (page - 1) * view_size
-      }
-  
-      request_params['$select'] = fields.join(',') if fields.present?
-
+    def synchonize_messages_for_folder(folder_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages"
+      request_params = build_request_params(args)
+      
       headers = {
-        'Prefer' => 'odata.track-changes'
+        'Prefer' => ['odata.track-changes', "odata.maxpagesize=#{args[:max_page_size].presence || 50}"]
       }
 
-      get_messages_response = make_api_call("GET", request_url, request_params, headers)
+      get_messages_response = make_api_call(:get, request_url, request_params, headers)
 
       JSON.parse(get_messages_response)
     end
 
-
-    # token (string): access token
     # id (string): The Id of the message to retrieve
     # fields (array): An array of field names to include in results
     # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_message_by_id(token, id, fields = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Messages/" << id
-      request_params = nil
+    def get_message_by_id(id, fields = nil, user = nil)
+      request_url  = "/#{user_or_me(user)}/Messages/#{id}"
 
-      unless fields.nil?
-        request_params = { '$select' => fields.join(',') }
-      end
+      request_params = fields.present? ? { '$select' => fields.join(',') } : nil
 
-      get_message_response = make_api_call "GET", request_url, token, request_params
+      get_message_response = make_api_call(:get, request_url, request_params)
 
       JSON.parse(get_message_response)
     end
@@ -458,6 +458,22 @@ module RubyOutlook
 
     def user_or_me(user)
       user.present? ? "users/#{user}" : "Me"
+    end
+
+    def build_request_params(params)
+      request_params = {}
+      request_params['$skiptoken']  = params[:skiptoken]   if params[:skiptoken].present?
+      request_params['$deltatoken'] = params[:deltatoken]  if params[:deltatoken].present?
+      request_params['$search']     = params[:search]      if params[:search].present?
+      request_params['$filter']     = params[:filter]      if params[:filter].present?
+      request_params['$select']     = params[:select]      if params[:select].present?
+      request_params['$orderby']    = params[:orderby]     if params[:orderby].present?
+      request_params['$top']        = params[:top]         if params[:top].present?
+      request_params['$skip']       = params[:skip]        if params[:skip].present?
+      request_params['$expand']     = params[:expand]      if params[:expand].present?
+      request_params['$count']      = params[:count]       if params[:count].present?    # TODO - Check these last couple for correctness
+      
+      request_params
     end
   end
 end
