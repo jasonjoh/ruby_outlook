@@ -61,13 +61,13 @@ module RubyOutlook
           conn.headers['Content-Type'] = "application/json"
           response = conn.post do |request|
             request.url request_url, params
-            request.body = JSON.dump(payload)
+            request.body = payload.to_json if payload.present?
           end
         when "PATCH"
           conn.headers['Content-Type'] = "application/json"
           response = conn.patch do |request|
             request.url request_url, params
-            request.body = JSON.dump(payload)
+            request.body = payload.to_json if payload.present?
           end
         when "DELETE"
           response = conn.delete do |request|
@@ -85,7 +85,7 @@ module RubyOutlook
       #puts "===\n\n"
 
       case response.status
-      when 200
+      when 200..399
         response.body
       when 400
         raise RubyOutlook::ClientError.new(response)
@@ -270,23 +270,23 @@ module RubyOutlook
       JSON.parse(get_message_response)
     end
 
-    # token (string): access token
-    # payload (hash): a JSON hash representing the contact entity
-    # folder_id (string): The Id of the folder to create the message in.
-    #                     If nil, message is created in the default drafts folder.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def create_message(token, payload, folder_id = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user))
+    def create_message(message_attributes, folder_id: nil, user: nil)
+      request_url = "/#{user_or_me(user)}#{"/folders/#{folder_id}" if folder_id.present? }/messages"
+  
+      response = make_api_call(:post, request_url, nil, nil, message_attributes)
+      JSON.parse(response)
+    end
 
-      unless folder_id.nil?
-        request_url << "/Folders/" << folder_id
-      end
+    def create_reply_all_message(message_id, comment, message: nil, user: nil)
+      request_url = "/#{user_or_me(user)}/messages/#{message_id}/createreplyall"
 
-      request_url << "/Messages"
+      reply_json = {
+        # TODO - allow for writable message attributes to be set
+        "Comment" => comment
+      }
 
-      create_message_response = make_api_call "POST", request_url, token, nil, nil, payload
-
-      JSON.parse(create_message_response)
+      response = make_api_call(:post, request_url, nil, nil, reply_json)
+      JSON.parse(response)
     end
 
     # token (string): access token
@@ -318,7 +318,7 @@ module RubyOutlook
     # payload (hash): a JSON hash representing the message to send
     # user (string): The user to make the call for. If nil, use the 'Me' constant.
     def send_message(token, payload, save_to_sentitems = true, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/SendMail"
+      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/sendmail"
 
       # Wrap message in the sendmail JSON structure
       send_mail_json = {
@@ -331,6 +331,26 @@ module RubyOutlook
       return nil if send_response.nil? || send_response.empty?
 
       JSON.parse(send_response)
+    end
+
+    def send_draft(message_id, user: nil)
+      request_url = "/#{user_or_me(user)}/messages/#{message_id}/send"
+      
+      response = make_api_call(:post, request_url)
+      JSON.parse(response) if response.present?
+    end
+  
+    # Quick Reply (does not return the response message)
+    def reply_all(message_id, comment, message: nil, user: nil)
+      request_url = "/#{user_or_me(user)}/messages/#{message_id}/replyall"
+
+      reply_json = {
+        # TODO - allow for writable message attributes to be set
+        "Comment" => comment
+      }
+
+      response = make_api_call(:post, request_url, nil, nil, reply_json)
+      JSON.parse(response) if response.present?
     end
 
     #----- End Mail API -----#
