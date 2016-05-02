@@ -77,12 +77,16 @@ module RubyOutlook
 
       # TODO - remove
       #p response
-      #p response.headers
-      #puts ".."
-      #p response.body
-      #puts ".."
+      p response.headers
+      puts ".."
+      p response.body
+      puts ".."
       #puts response.env
       #puts "===\n\n"
+
+      # To Demo verifcation error
+      #
+      #raise RubyOutlook::MailError.new("POST https://outlook.office365.com/api/beta/Me/messages/AQMkADAwATNiZmYAZC1lOWE1LTgxZDAtMDACLTAwCgBGAAAD9ZqXqLmCeU_WJdvX85wSmQcA--dVSMxFoUWBXcVxy_0enwAAAgEPAAAA--dVSMxFoUWBXcVxy_0enwAAAAOrd5IAAAA=/send: 554 {\"error\":{\"code\":\"ErrorMessageSubmissionBlocked\",\"message\":\"Cannot send mail. Follow the instructions in your Inbox to verify your account., WASCL UserAction verdict is not None. Actual verdict is HipSend, ShowTierUpgrade.\"}}")
 
       case response.status
       when 200..399
@@ -93,6 +97,8 @@ module RubyOutlook
         raise RubyOutlook::AuthorizationError.new(response)
       when 500
         raise RubyOutlook::ServerError.new(response)
+      when 554
+        raise RubyOutlook::MailError.new(response)
       else
         raise RubyOutlook::Error.new(response)
       end
@@ -215,31 +221,11 @@ module RubyOutlook
       JSON.parse(get_messages_response)
     end
 
-    # token (string): access token
-    # view_size (int): maximum number of results
-    # page (int): What page to fetch (multiple of view size)
-    # fields (array): An array of field names to include in results
-    # sort (hash): { sort_on => field_to_sort_on, sort_order => 'ASC' | 'DESC' }
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    # folder_id (string): The folder to get mail for. (inbox, drafts, sentitems, deleteditems)
-    def get_messages_for_folder(token, view_size, page, fields = nil, sort = nil, user = nil, folder_id)
-      request_url = "/beta/me/mailFolders/Inbox/messages"
-
-      #request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/MailFolders/#{folder_id}/messages"
-      request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
-      }
-
-      unless fields.nil?
-        request_params['$select'] = fields.join(',')
-      end
-
-      unless sort.nil?
-        request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
-      end
-
-      get_messages_response = make_api_call "GET", request_url, token, request_params
+    def get_messages_for_folder(folder_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages"
+      request_params = build_request_params(args)
+      
+      get_messages_response = make_api_call(:get, request_url, request_params)
 
       JSON.parse(get_messages_response)
     end
@@ -277,8 +263,8 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    def create_reply_all_message(message_id, comment, message: nil, user: nil)
-      request_url = "/#{user_or_me(user)}/messages/#{message_id}/createreplyall"
+    def create_reply_message(message_id, comment, message: nil, user: nil)
+      request_url = "/#{user_or_me(user)}/messages/#{message_id}/createreply"
 
       reply_json = {
         # TODO - allow for writable message attributes to be set

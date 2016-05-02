@@ -8,7 +8,11 @@ module RubyOutlook
     private 
 
     def formatted_error_message(response)
-      "#{response.env.method.to_s.upcase} #{response.env.url}: #{response.env.status} #{response.env.body}"
+      if response.try(:env).present?
+        "#{response.env.method.to_s.upcase} #{response.env.url}: #{response.env.status} #{response.env.body}"
+      else
+        response
+      end 
     end  
   end
   
@@ -26,5 +30,9 @@ module RubyOutlook
 
   # 500 error
   class ServerError < Error
+  end
+
+  # 554 error - cannot send mail (action needed)
+  class MailError < Error
   end
 end
