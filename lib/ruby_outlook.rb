@@ -3,6 +3,10 @@ require_relative "ruby_outlook/configuration"
 require_relative "ruby_outlook/client"
 require_relative "ruby_outlook/error"
 
+require_relative "ruby_outlook/apis/contacts"
+require_relative "ruby_outlook/apis/calendar"
+require_relative "ruby_outlook/apis/mail"
+
 module RubyOutlook
   extend Configuration
 
