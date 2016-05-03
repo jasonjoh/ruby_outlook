@@ -77,10 +77,10 @@ module RubyOutlook
 
       # TODO - remove
       #p response
-      p response.headers
-      puts ".."
-      p response.body
-      puts ".."
+      #p response.headers
+      #puts ".."
+      #p response.body
+      #puts ".."
       #puts response.env
       #puts "===\n\n"
 
@@ -243,9 +243,6 @@ module RubyOutlook
       JSON.parse(get_messages_response)
     end
 
-    # id (string): The Id of the message to retrieve
-    # fields (array): An array of field names to include in results
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
     def get_message_by_id(id, fields = nil, user = nil)
       request_url  = "/#{user_or_me(user)}/Messages/#{id}"
 
@@ -275,16 +272,12 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    # token (string): access token
-    # payload (hash): a JSON hash representing the updated message fields
-    # id (string): The Id of the message to update.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def update_message(token, payload, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Messages/" << id
 
-      update_message_response = make_api_call "PATCH", request_url, token, nil, nil, payload
+    def update_message(id, message_attributes, user = nil)
+      request_url  = "/#{user_or_me(user)}/Messages/#{id}"
 
-      JSON.parse(update_message_response)
+      response = make_api_call(:patch, request_url, nil, nil, message_attributes)
+      JSON.parse(response)
     end
 
     # token (string): access token
