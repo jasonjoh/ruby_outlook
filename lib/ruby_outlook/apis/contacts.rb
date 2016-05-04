@@ -1,49 +1,21 @@
 module RubyOutlook
   class Client
 
-    # TODO - fix
-    # token (string): access token
-    # view_size (int): maximum number of results
-    # page (int): What page to fetch (multiple of view size)
-    # fields (array): An array of field names to include in results
-    # sort (hash): { sort_on => field_to_sort_on, sort_order => 'ASC' | 'DESC' }
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts"
-      request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
-      }
-
-      unless fields.nil?
-        request_params['$select'] = fields.join(',')
-      end
-
-      unless sort.nil?
-        request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
-      end
-
-      get_contacts_response = make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_contacts_response)
+    def get_contacts(**args)
+      request_url = "/#{user_or_me(args[:user])}/contacts"
+      request_params = build_request_params(args)
+      
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
     end
 
-    # TODO - fix
-    # token (string): access token
-    # id (string): The Id of the contact to retrieve
-    # fields (array): An array of field names to include in results
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_contact_by_id(token, id, fields = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts/" << id
-      request_params = nil
+    def get_contact_by_id(id, select = nil, user = nil)
+      request_url = "/#{user_or_me(user)}/contacts/#{id}"
 
-      unless fields.nil?
-        request_params = { '$select' => fields.join(',') }
-      end
+      request_params = select.present? ? { '$select' => select } : nil
 
-      get_contact_response = make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_contact_response)
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
     end
 
     # TODO - fix

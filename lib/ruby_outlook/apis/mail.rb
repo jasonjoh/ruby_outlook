@@ -32,9 +32,8 @@ module RubyOutlook
       request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages"
       request_params = build_request_params(args)
       
-      get_messages_response = make_api_call(:get, request_url, request_params)
-
-      JSON.parse(get_messages_response)
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
     end
 
     def synchonize_messages_for_folder(folder_id, **args)
@@ -45,9 +44,8 @@ module RubyOutlook
         'Prefer' => ['odata.track-changes', "odata.maxpagesize=#{args[:max_page_size].presence || 50}"]
       }
 
-      get_messages_response = make_api_call(:get, request_url, request_params, headers)
-
-      JSON.parse(get_messages_response)
+      response = make_api_call(:get, request_url, request_params, headers)
+      JSON.parse(response)
     end
 
     def get_message_by_id(id, fields = nil, user = nil)
@@ -55,9 +53,8 @@ module RubyOutlook
 
       request_params = fields.present? ? { '$select' => fields.join(',') } : nil
 
-      get_message_response = make_api_call(:get, request_url, request_params)
-
-      JSON.parse(get_message_response)
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
     end
 
     def create_message(message_attributes, folder_id: nil, user: nil)
