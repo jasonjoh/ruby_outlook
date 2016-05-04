@@ -18,51 +18,28 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    # TODO - fix
-    # token (string): access token
-    # payload (hash): a JSON hash representing the contact entity
-    # folder_id (string): The Id of the contact folder to create the contact in.
-    #                     If nil, contact is created in the default contacts folder.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def create_contact(token, payload, folder_id = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user))
+    def create_contact(contact_attributes, folder_id = nil, user = nil)
+      request_url = "/#{user_or_me(user)}#{"/ContactFolders/#{folder_id}" if folder_id.present? }/contacts"
 
-      unless folder_id.nil?
-        request_url << "/ContactFolders/" << folder_id
-      end
-
-      request_url << "/Contacts"
-
-      create_contact_response = make_api_call "POST", request_url, token, nil, nil, payload
-
-      JSON.parse(create_contact_response)
+      response = make_api_call(:post, request_url, nil, nil, contact_attributes)
+      JSON.parse(response)
     end
 
-    # TODO - fix
-    # token (string): access token
-    # payload (hash): a JSON hash representing the updated contact fields
-    # id (string): The Id of the contact to update.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def update_contact(token, payload, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts/" << id
+    def update_contact(id, contact_attributes, user = nil)
+      request_url = "/#{user_or_me(user)}/contacts/#{id}"
 
-      update_contact_response = make_api_call "PATCH", request_url, token, nil, nil, payload
-
-      JSON.parse(update_contact_response)
+      response = make_api_call(:patch, request_url, nil, nil, contact_attributes)
+      JSON.parse(response)
     end
 
-    # TODO - fix
-    # token (string): access token
-    # id (string): The Id of the contact to delete.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def delete_contact(token, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Contacts/" << id
+    def delete_contact(id, user = nil)
+      request_url = "/#{user_or_me(user)}/contacts/#{id}"
 
-      delete_response = make_api_call "DELETE", request_url, token
+      response = make_api_call(:delete, request_url)
 
-      return nil if delete_response.nil? || delete_response.empty?
+      return nil if response.blank?
 
-       JSON.parse(delete_response)
+      JSON.parse(response)
     end
   
   end
