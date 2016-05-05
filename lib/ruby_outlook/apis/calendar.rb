@@ -1,6 +1,29 @@
 module RubyOutlook
   class Client
 
+    def get_calendars(**args)
+      request_url  = "/#{user_or_me(args[:user])}#{"/calendargroups/#{args[:calendar_group_id]}" if args[:calendar_group_id].present?}/calendars"
+      request_params = build_request_params(args)
+
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
+    end
+
+    def sync_events(start_date_time, end_date_time, **args)
+      request_url  = "/#{user_or_me(args[:user])}#{"/calendars('#{args[:calendar_id]}')" if args[:calendar_id].present?}/calendarview"
+      request_params = build_request_params(args)
+
+      request_params['startDateTime'] = start_date_time.respond_to?(:iso8601) ? start_date_time.iso8601 : start_date_time
+      request_params['endDateTime']   = end_date_time.respond_to?(:iso8601)   ? end_date_time.iso8601   : end_date_time
+
+      headers = {
+        'Prefer' => ['odata.track-changes', "odata.maxpagesize=#{args[:max_page_size].presence || 50}"]
+      }
+
+      response = make_api_call(:get, request_url, request_params, headers)
+      JSON.parse(response)
+    end
+
     # TODO - fix
     # token (string): access token
     # view_size (int): maximum number of results
