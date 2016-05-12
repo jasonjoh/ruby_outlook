@@ -24,17 +24,17 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    def create_event(meeting_attributes, calendar_id: nil, user: nil)
+    def create_event(event_attributes, calendar_id: nil, user: nil)
       request_url  = "/#{user_or_me(user)}#{"/calendars('#{calendar_id}')" if calendar_id.present?}/events"
 
-      response = make_api_call(:post, request_url, nil, nil, meeting_attributes)
+      response = make_api_call(:post, request_url, nil, nil, event_attributes)
       JSON.parse(response)
     end
 
-    def update_event(meeting_id, meeting_attributes, user: nil)
-      request_url  = "/#{user_or_me(user)}/events/#{meeting_id}"
+    def update_event(event_id, event_attributes, user: nil)
+      request_url  = "/#{user_or_me(user)}/events/#{event_id}"
 
-      response = make_api_call(:patch, request_url, nil, nil, meeting_attributes)
+      response = make_api_call(:patch, request_url, nil, nil, event_attributes)
       JSON.parse(response)
     end
   
