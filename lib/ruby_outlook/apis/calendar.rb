@@ -24,6 +24,28 @@ module RubyOutlook
       JSON.parse(response)
     end
 
+    def create_event(meeting_attributes, calendar_id: nil, user: nil)
+      request_url  = "/#{user_or_me(user)}#{"/calendars('#{calendar_id}')" if calendar_id.present?}/events"
+
+      response = make_api_call(:post, request_url, nil, nil, meeting_attributes)
+      JSON.parse(response)
+    end
+
+    def update_event(meeting_id, meeting_attributes, user: nil)
+      request_url  = "/#{user_or_me(user)}/events/#{meeting_id}"
+
+      response = make_api_call(:patch, request_url, nil, nil, meeting_attributes)
+      JSON.parse(response)
+    end
+  
+    def respond_to_event(event_id, action, user: nil, comment: nil, send_response: nil)
+      action = action.to_s.downcase
+
+      raise RubyOutlook::ClientError.new('Please only use an action of accept, tentativelyaccept, or decline.') unless ['accept', 'tentativelyaccept', 'decline'].include?(action)
+      
+      update_event_response(action, event_id, user, comment, send_response)
+    end
+  
     # TODO - fix
     # token (string): access token
     # view_size (int): maximum number of results
@@ -102,39 +124,6 @@ module RubyOutlook
 
     # TODO - fix
     # token (string): access token
-    # payload (hash): a JSON hash representing the event entity
-    # folder_id (string): The Id of the calendar folder to create the event in.
-    #                     If nil, event is created in the default calendar folder.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def create_event(token, payload, folder_id = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user))
-
-      unless folder_id.nil?
-        request_url << "/Calendars/" << folder_id
-      end
-
-      request_url << "/Events"
-
-      create_event_response = make_api_call "POST", request_url, token, nil, nil, payload
-
-      JSON.parse(create_event_response)
-    end
-
-    # TODO - fix
-    # token (string): access token
-    # payload (hash): a JSON hash representing the updated event fields
-    # id (string): The Id of the event to update.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def update_event(token, payload, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Events/" << id
-
-      update_event_response = make_api_call "PATCH", request_url, token, nil, nil, payload
-
-      JSON.parse(update_event_response)
-    end
-
-    # TODO - fix
-    # token (string): access token
     # id (string): The Id of the event to delete.
     # user (string): The user to make the call for. If nil, use the 'Me' constant.
     def delete_event(token, id, user = nil)
@@ -147,5 +136,20 @@ module RubyOutlook
       JSON.parse(delete_response)
     end
 
+    private
+
+    def update_event_response(action, event_id, user, comment, send_response)
+      request_url = "/#{user_or_me(user)}/events/#{event_id}/#{action}"
+
+      event_attributes = {}
+      event_attributes['Comment'] = comment if comment.present?
+      event_attributes['SendResponse'] = send_response if [true, false].include?(send_response)
+
+      response = make_api_call(:post, request_url, nil, nil, event_attributes)
+  
+      return nil if response.blank?    
+  
+      JSON.parse(response)
+    end
   end
 end
