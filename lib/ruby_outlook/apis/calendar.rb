@@ -41,7 +41,7 @@ module RubyOutlook
     def respond_to_event(event_id, action, user: nil, comment: nil, send_response: nil)
       action = action.to_s.downcase
 
-      raise RubyOutlook::ClientError.new('Please only use an action of accept, tentativelyaccept, or decline.') unless ['accept', 'tentativelyaccept', 'decline'].include?(action)
+      raise RubyOutlook::ClientError.new("#{action} is invalid. Valid actions are accept, tentativelyaccept, or decline.") unless ['accept', 'tentativelyaccept', 'decline'].include?(action)
       
       update_event_response(action, event_id, user, comment, send_response)
     end
