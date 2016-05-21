@@ -81,7 +81,7 @@ module RubyOutlook
       case response.status
       when 200..399
         response.body
-      when 400
+      when 400, 402..499
         raise RubyOutlook::ClientError.new(response)
       when 401
         raise RubyOutlook::AuthorizationError.new(response)
