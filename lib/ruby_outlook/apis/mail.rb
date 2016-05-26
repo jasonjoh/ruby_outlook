@@ -1,31 +1,12 @@
 module RubyOutlook
   class Client
     
-    # TODO - fix
-    # token (string): access token
-    # view_size (int): maximum number of results
-    # page (int): What page to fetch (multiple of view size)
-    # fields (array): An array of field names to include in results
-    # sort (hash): { sort_field: field_to_sort_on, sort_order: 'ASC' | 'DESC' }
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_messages(token, view_size, page, fields = nil, sort = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Messages"
-      request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
-      }
+    def get_messages(**args)
+      request_url  = "/#{user_or_me(args[:user])}/messages"
+      request_params = build_request_params(args)      
 
-      unless fields.nil?
-        request_params['$select'] = fields.join(',')
-      end
-
-      unless sort.nil?
-        request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
-      end
-
-      get_messages_response = make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_messages_response)
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
     end
 
     def get_messages_for_folder(folder_id, **args)
@@ -64,8 +45,8 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    def create_reply_message(message_id, comment, message: nil, user: nil)
-      request_url = "/#{user_or_me(user)}/messages/#{message_id}/createreply"
+    def create_reply_message(id, comment, message: nil, user: nil)
+      request_url = "/#{user_or_me(user)}/messages/#{id}/createreply"
 
       reply_json = {
         # TODO - allow for writable message attributes to be set
@@ -84,18 +65,11 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    # TODO - fix
-    # token (string): access token
-    # id (string): The Id of the message to delete.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def delete_message(token, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Messages/" << id
+    def delete_message(id, user = nil)
+      request_url = "/#{user_or_me(user)}/messages/#{id}"
 
-      delete_response = make_api_call "DELETE", request_url, token
-
-      return nil if delete_response.nil? || delete_response.empty?
-
-      JSON.parse(delete_response)
+      response = make_api_call(:delete, request_url)
+      JSON.parse(response) if response.present?
     end
 
     # TODO - fix
