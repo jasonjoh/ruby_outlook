@@ -8,10 +8,12 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    def get_tasks(task_folder_id = nil, user = nil)
-      request_url = "/#{user_or_me(user)}#{"/taskfolders/#{task_folder_id}" if task_folder_id.present? }/tasks"
+    def get_tasks(**args)
+      request_url = "/#{user_or_me(args[:user])}#{"/taskfolders/#{args[:task_folder_id]}" if args[:task_folder_id].present? }/tasks"
       
-      response = make_api_call(:get, request_url)
+      request_params = build_request_params(args)
+      
+      response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
 
