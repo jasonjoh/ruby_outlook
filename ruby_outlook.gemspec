@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Jason Johnston"]
   spec.email         = ["jasonjoh@microsoft.com"]
 
-  spec.summary       = %q{A ruby gem to invoke the Office 365 REST APIs.}
-  spec.description   = %q{This ruby gem provides functions for common operations with the Office 365 Mail, Calendar, and Contacts APIs.}
+  spec.summary       = %q{A ruby gem to invoke the Outlook REST APIs.}
+  spec.description   = %q{This ruby gem provides functions for common operations with the Outlook Mail, Calendar, and Contacts APIs.}
   spec.homepage      = "https://github.com/jasonjoh/ruby_outlook"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
