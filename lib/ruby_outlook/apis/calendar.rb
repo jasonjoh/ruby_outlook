@@ -38,7 +38,7 @@ module RubyOutlook
       JSON.parse(response)
     end
   
-    def delete_event(event_id)
+    def delete_event(event_id, user: nil)
       request_url  = "/#{user_or_me(user)}/events/#{event_id}"
 
       response = make_api_call(:delete, request_url)
