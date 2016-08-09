@@ -38,6 +38,13 @@ module RubyOutlook
       JSON.parse(response)
     end
   
+    def delete_event(event_id)
+      request_url  = "/#{user_or_me(user)}/events/#{event_id}"
+
+      response = make_api_call(:delete, request_url)
+      JSON.parse(response) if response.present?
+    end
+
     def respond_to_event(event_id, action, user: nil, comment: nil, send_response: nil)
       action = action.to_s.downcase
 
@@ -120,20 +127,6 @@ module RubyOutlook
       get_view_response =make_api_call "GET", request_url, token, request_params
 
       JSON.parse(get_view_response)
-    end
-
-    # TODO - fix
-    # token (string): access token
-    # id (string): The Id of the event to delete.
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def delete_event(token, id, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Events/" << id
-
-      delete_response = make_api_call "DELETE", request_url, token
-
-      return nil if delete_response.nil? || delete_response.empty?
-
-      JSON.parse(delete_response)
     end
 
     private
