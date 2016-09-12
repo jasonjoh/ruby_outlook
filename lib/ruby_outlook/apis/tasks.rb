@@ -44,5 +44,20 @@ module RubyOutlook
       response = make_api_call(:post, request_url, nil, nil, task_folder_attributes)
       JSON.parse(response)
     end
+        
+    def update_task_folder(task_folder_id, task_folder_attributes, user = nil)
+      request_url = "/#{user_or_me(user)}/taskfolders/#{task_folder_id}"
+      
+      response = make_api_call(:patch, request_url, nil, nil, task_folder_attributes)
+      JSON.parse(response)
+    end
+    
+    def delete_task_folder(task_folder_id, user = nil)
+      request_url = "/#{user_or_me(user)}/taskfolders/#{task_folder_id}"
+      
+      response = make_api_call(:delete, request_url)
+      JSON.parse(response) if response.present?
+    end
+    
   end
 end
