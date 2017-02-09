@@ -78,7 +78,10 @@ module RubyOutlook
       end
 
       if response.status >= 300
-        return JSON.dump({ 'ruby_outlook_error' => response.status})
+        error_info = response.body.empty? ? '' : JSON.parse(response.body)
+        return JSON.dump({ 
+          'ruby_outlook_error' => response.status,
+          'ruby_outlook_response' => error_info })
       end
 
       response.body
