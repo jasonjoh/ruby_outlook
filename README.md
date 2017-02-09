@@ -146,7 +146,7 @@ Follow the same pattern to implement your own calls.
 
 ## Contributing
 
-1. Fork it ( https://github.com/jasonjoh/ruby_outlook/fork )a
+1. [Fork it](https://github.com/jasonjoh/ruby_outlook/fork)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
