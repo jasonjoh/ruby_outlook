@@ -8,6 +8,14 @@ module RubyOutlook
       response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
+    
+    def get_attachments_for(message_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/messages/#{message_id}/attachments"
+      request_params = build_request_params(args)
+      
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
+    end
 
     def get_messages_for_folder(folder_id, **args)
       request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages"
