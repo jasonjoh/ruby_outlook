@@ -13,7 +13,9 @@ module RubyOutlook
       
       request_params = build_request_params(args)
       
-      response = make_api_call(:get, request_url, request_params)
+      headers = args[:track] ? { 'Prefer' => 'odata.track-changes' } : {}
+      
+      response = make_api_call(:get, request_url, request_params, headers)
       JSON.parse(response)
     end
 
