@@ -377,8 +377,8 @@ module RubyOutlook
       request_url << "/CalendarView"
 
       request_params = {
-        'startDateTime' => window_start.strftime('%Y-%m-%dT00:00:00Z'),
-        'endDateTime' => window_end.strftime('%Y-%m-%dT00:00:00Z')
+        'startDateTime' => window_start.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'endDateTime' => window_end.strftime('%Y-%m-%dT%H:%M:%SZ')
       }
 
       unless fields.nil?
