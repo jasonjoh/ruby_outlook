@@ -251,6 +251,24 @@ module RubyOutlook
     end
 
     # token (string): access token
+    # id (string): The Id of the message to retrieve
+    # fields (array): An array of field names to include in results
+    # user (string): The user to make the call for. If nil, use the 'Me' constant.
+    # returns JSON array of attachments
+    def get_attachment_by_message_id(token, id, fields = nil, user = nil)
+      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Messages/" << id << "/attachments/"
+      request_params = nil
+
+      unless fields.nil?
+        request_params = { '$select' => fields.join(',') }
+      end
+
+      get_message_response = make_api_call "GET", request_url, token, request_params
+
+      JSON.parse(get_message_response)
+    end
+
+    # token (string): access token
     # payload (hash): a JSON hash representing the contact entity
     # folder_id (string): The Id of the folder to create the message in.
     #                     If nil, message is created in the default drafts folder.
