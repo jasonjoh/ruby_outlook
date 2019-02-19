@@ -29,7 +29,7 @@ module RubyOutlook
     def make_api_call(method, url, token, params = nil, payload = {})
 
       conn_params = {
-        :url => 'https://outlook.office365.com'
+        :url => @api_host
       }
 
       if @enable_fiddler
