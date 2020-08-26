@@ -60,7 +60,7 @@ module RubyOutlook
     # api (symbol): One of :graph, :office, :office365. Sets base url if `base_url` omitted and manages
     #               Resource Property Names (:graph uses camelCase, :office/:office365 uses PascalCase)
     # base_url (string): template url for targeted api.
-    def initialize(api: :office365, base_url: nil, version: nil)
+    def initialize(api: :office365, base_url: nil, version: nil, debug: false)
       @user_agent = "RubyOutlookGem/" << RubyOutlook::VERSION
 
       @api_host = base_url || BASE_URLS[api]
@@ -70,6 +70,7 @@ module RubyOutlook
       @resource_format = (api == :graph) ? :camel_case : :pascal_case
 
       @enable_fiddler = false
+      @debug = debug
     end
 
     # method (string): The HTTP method to use for the API call.
@@ -95,6 +96,7 @@ module RubyOutlook
       conn = Faraday.new(conn_params) do |faraday|
         # Uses the default Net::HTTP adapter
         faraday.adapter  Faraday.default_adapter
+        faraday.response :logger if @debug
       end
 
       conn.headers = {
@@ -425,6 +427,32 @@ module RubyOutlook
       get_events_response = make_api_call "GET", request_url, token, request_params
 
       JSON.parse(get_events_response)
+    end
+
+
+    # token (string): access token
+    # payload (hash): a JSON hash representing the calendar entity
+    #                 {
+    #                   "Name": "Social"
+    #                 }
+    # calendar_group_id (string): The Id of the calendar group to create the calendar in.
+    #                     If nil, calendar is created in the default calendar group.
+    # user (string): The user to make the call for. If nil, use the 'Me' constant.
+    def create_calendar(token, payload, calendar_group_id = nil, user = nil)
+      # POST https://outlook.office.com/api/v2.0/me/calendars
+      # POST https://outlook.office.com/api/v2.0/me/calendargroups/{calendar_group_id}/calendars
+
+      request_url = user_context(user)
+
+      unless calendar_group_id.nil?
+        request_url << "/CalendarGroups/" << calendar_group_id
+      end
+
+      request_url << "/calendars"
+
+      create_calendar_response = make_api_call "POST", request_url, token, nil, payload
+
+      JSON.parse(create_calendar_response)
     end
 
     # token (string): access token
