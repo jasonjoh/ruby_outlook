@@ -67,10 +67,15 @@ def get_token_from_code(auth_code)
                               :authorize_url => "/common/oauth2/v2.0/authorize",
                               :token_url => "/common/oauth2/v2.0/token")
 
+  # For a shortcut to resource permission scope to Outlook API Calendar.ReadWrite, you can use `resource`
   token = client.auth_code.get_token(auth_code,
                                      :redirect_uri => "http://yourapp.com/authorize",
                                      :resource => 'https://outlook.office365.com')
 
+  # For Microsoft Graph API,
+  token = client.auth_code.get_token(auth_code,
+                                     :redirect_uri => "http://yourapp.com/authorize",
+                                     :scope => "offline_access https://graph.microsoft.com/Calendars.ReadWrite")
   access_token = token
 end
 ```

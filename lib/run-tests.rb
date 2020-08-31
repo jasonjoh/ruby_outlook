@@ -49,7 +49,7 @@ def do_contact_api_tests(token)
   }
   JSON
 
-  outlook_client = RubyOutlook::Client.new(debug: DEBUG)
+  outlook_client = RubyOutlook::Client.new(return_format: :pascal_case, debug: DEBUG)
 
   puts 'Testing POST /me/contacts'
   new_contact_json = JSON.parse(new_contact_payload)
@@ -135,7 +135,7 @@ def do_mail_api_tests(token)
   }
   JSON
   
-  outlook_client = RubyOutlook::Client.new(debug: DEBUG)
+  outlook_client = RubyOutlook::Client.new(return_format: :pascal_case, debug: DEBUG)
 
   puts 'Testing POST /me/messages'
   new_message_json = JSON.parse(new_message_payload)
@@ -226,7 +226,7 @@ def do_calendar_api_tests(token)
   }
   JSON
   
-  outlook_client = RubyOutlook::Client.new(debug: DEBUG)
+  outlook_client = RubyOutlook::Client.new(return_format: :pascal_case, debug: DEBUG)
 
   # # Tried creating a Calendar to poke at create_event hitting a 400 UnableToDeserializePostBody, unsuccessfully
   # # leaving it commented until gem also supports delete_calendar

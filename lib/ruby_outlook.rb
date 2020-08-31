@@ -60,7 +60,11 @@ module RubyOutlook
     # api (symbol): One of :graph, :office, :office365. Sets base url if `base_url` omitted and manages
     #               Resource Property Names (:graph uses camelCase, :office/:office365 uses PascalCase)
     # base_url (string): template url for targeted api.
-    def initialize(api: :office365, base_url: nil, version: nil, debug: false)
+    # version (nil, string): use API version stated, or latest not-beta if nil. see API_VERSIONS
+    # return_format (symbol): One of :camel_case, :pascal_case. For forward/backwards compatibility between
+    #                         office/office365 (PascalCase) and graph (camelCase) apis.
+    #                         NOTE: Graph API accepts both camelCase and PascalCase inputs
+    def initialize(api: :office365, base_url: nil, version: nil, return_format: nil, debug: false)
       @user_agent = "RubyOutlookGem/" << RubyOutlook::VERSION
 
       @api_host = base_url || BASE_URLS[api]
@@ -68,6 +72,7 @@ module RubyOutlook
       # MS Graph API uses cameCase, Outlook REST API used PascalCase
       # ActiveSupport calls these .camelcase(:lower) and .camelcase(:upper) respectively (defaults to :upper ¯\_(ツ)_/¯)
       @resource_format = (api == :graph) ? :camel_case : :pascal_case
+      @return_format = return_format || @resource_format
 
       @enable_fiddler = false
       @debug = debug
@@ -180,7 +185,7 @@ module RubyOutlook
 
       get_contacts_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_contacts_response)
+      parse_response(get_contacts_response)
     end
 
     # token (string): access token
@@ -197,7 +202,7 @@ module RubyOutlook
 
       get_contact_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_contact_response)
+      parse_response(get_contact_response)
     end
 
     # token (string): access token
@@ -216,7 +221,7 @@ module RubyOutlook
 
       create_contact_response = make_api_call "POST", request_url, token, nil, payload
 
-      JSON.parse(create_contact_response)
+      parse_response(create_contact_response)
     end
 
     # token (string): access token
@@ -228,7 +233,7 @@ module RubyOutlook
 
       update_contact_response = make_api_call "PATCH", request_url, token, nil, payload
 
-      JSON.parse(update_contact_response)
+      parse_response(update_contact_response)
     end
 
     # token (string): access token
@@ -241,7 +246,7 @@ module RubyOutlook
 
       return nil if delete_response.nil? || delete_response.empty?
 
-       JSON.parse(delete_response)
+      parse_response(delete_response)
     end
 
     #----- End Contacts API -----#
@@ -271,7 +276,7 @@ module RubyOutlook
 
       get_messages_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_messages_response)
+      parse_response(get_messages_response)
     end
 
     # token (string): access token
@@ -298,7 +303,7 @@ module RubyOutlook
 
       get_messages_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_messages_response)
+      parse_response(get_messages_response)
     end
 
     # token (string): access token
@@ -315,7 +320,7 @@ module RubyOutlook
 
       get_message_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_message_response)
+      parse_response(get_message_response)
     end
 
     # token (string): access token
@@ -333,7 +338,7 @@ module RubyOutlook
 
       get_message_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_message_response)
+      parse_response(get_message_response)
     end
 
     # token (string): access token
@@ -352,7 +357,7 @@ module RubyOutlook
 
       create_message_response = make_api_call "POST", request_url, token, nil, payload
 
-      JSON.parse(create_message_response)
+      parse_response(create_message_response)
     end
 
     # token (string): access token
@@ -364,7 +369,7 @@ module RubyOutlook
 
       update_message_response = make_api_call "PATCH", request_url, token, nil, payload
 
-      JSON.parse(update_message_response)
+      parse_response(update_message_response)
     end
 
     # token (string): access token
@@ -377,7 +382,7 @@ module RubyOutlook
 
       return nil if delete_response.nil? || delete_response.empty?
 
-      JSON.parse(delete_response)
+      parse_response(delete_response)
     end
 
     # token (string): access token
@@ -396,7 +401,7 @@ module RubyOutlook
 
       return nil if send_response.nil? || send_response.empty?
 
-      JSON.parse(send_response)
+      parse_response(send_response)
     end
 
     #----- End Mail API -----#
@@ -426,7 +431,7 @@ module RubyOutlook
 
       get_events_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_events_response)
+      parse_response(get_events_response)
     end
 
 
@@ -452,7 +457,7 @@ module RubyOutlook
 
       create_calendar_response = make_api_call "POST", request_url, token, nil, payload
 
-      JSON.parse(create_calendar_response)
+      parse_response(create_calendar_response)
     end
 
     # token (string): access token
@@ -478,7 +483,7 @@ module RubyOutlook
 
       get_events_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_events_response)
+      parse_response(get_events_response)
     end
 
     # token (string): access token
@@ -495,7 +500,7 @@ module RubyOutlook
 
       get_event_response = make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_event_response)
+      parse_response(get_event_response)
     end
 
     # token (string): access token
@@ -526,7 +531,7 @@ module RubyOutlook
 
       get_view_response =make_api_call "GET", request_url, token, request_params
 
-      JSON.parse(get_view_response)
+      parse_response(get_view_response)
     end
 
     # token (string): access token
@@ -545,7 +550,7 @@ module RubyOutlook
 
       create_event_response = make_api_call "POST", request_url, token, nil, payload
 
-      JSON.parse(create_event_response)
+      parse_response(create_event_response)
     end
 
     # token (string): access token
@@ -557,7 +562,7 @@ module RubyOutlook
 
       update_event_response = make_api_call "PATCH", request_url, token, nil, payload
 
-      JSON.parse(update_event_response)
+      parse_response(update_event_response)
     end
 
     # token (string): access token
@@ -570,13 +575,32 @@ module RubyOutlook
 
       return nil if delete_response.nil? || delete_response.empty?
 
-      JSON.parse(delete_response)
+      parse_response(delete_response)
     end
+
     #----- End Calendar API -----#
 
     private
     def user_context(user)
       user.nil? ? "Me" : ("users/" << user)
+    end
+
+    def parse_response(response)
+      # TODO: consider `return nil if response.nil? || response.empty?` for delete_* calls
+      parsed = JSON.parse(response)
+      parsed = transform_keys(parsed, (@return_format == :camel_case ? :downcase : :upcase)) if @return_format != @resource_format
+      parsed
+    end
+
+    def transform_keys(response, updown)
+      if response.respond_to? :transform_keys!
+        response.transform_keys! do |k|
+          k[0] ? k.sub(/./) {|c| c.send(updown) } : k
+        end
+        response.transform_values!{|v| transform_keys(v, updown)}
+      end
+
+      response
     end
 
   end
