@@ -35,6 +35,9 @@ In addition, you can set the `enable_fiddler` property on the `Client` to true i
 
 ### Get an OAuth2 token ###
 
+see https://docs.microsoft.com/en-us/graph/tutorials/ruby?view=graph-rest-1.0
+https://docs.microsoft.com/en-us/outlook/rest/compare-graph#azure-v2-oauth2-endpoint
+
 The Outlook APIs require an OAuth2 token for authentication. This gem doesn't handle the OAuth2 flow for you. For a full example that implements the OAuth2 [Authorization Code Grant Flow](https://msdn.microsoft.com/en-us/library/azure/dn645542.aspx), see the [Office 365 VCF Import/Export Sample](https://github.com/jasonjoh/o365-vcftool).
 
 For convenience, here's the relevant steps and code, which uses the [oauth2](https://rubygems.org/gems/oauth2) gem.
@@ -46,8 +49,8 @@ def get_login_url
   client = OAuth2::Client.new(CLIENT_ID,
                               CLIENT_SECRET,
                               :site => "https://login.microsoftonline.com",
-                              :authorize_url => "/common/oauth2/authorize",
-                              :token_url => "/common/oauth2/token")
+                              :authorize_url => "/common/oauth2/v2.0/authorize",
+                              :token_url => "/common/oauth2/v2.0/token")
 
   login_url = client.auth_code.authorize_url(:redirect_uri => "http://yourapp.com/authorize")
 end
@@ -61,13 +64,18 @@ def get_token_from_code(auth_code)
   client = OAuth2::Client.new(CLIENT_ID,
                               CLIENT_SECRET,
                               :site => "https://login.microsoftonline.com",
-                              :authorize_url => "/common/oauth2/authorize",
-                              :token_url => "/common/oauth2/token")
+                              :authorize_url => "/common/oauth2/v2.0/authorize",
+                              :token_url => "/common/oauth2/v2.0/token")
 
+  # For a shortcut to resource permission scope to Outlook API Calendar.ReadWrite, you can use `resource`
   token = client.auth_code.get_token(auth_code,
                                      :redirect_uri => "http://yourapp.com/authorize",
                                      :resource => 'https://outlook.office365.com')
 
+  # For Microsoft Graph API,
+  token = client.auth_code.get_token(auth_code,
+                                     :redirect_uri => "http://yourapp.com/authorize",
+                                     :scope => "offline_access https://graph.microsoft.com/Calendars.ReadWrite")
   access_token = token
 end
 ```
