@@ -11,6 +11,7 @@ module RubyOutlook
     # set via .new(api: :graph) etc. See BASE_URLS
     attr_writer :api_host
     attr_writer :enable_fiddler
+    attr_writer :version
 
     # Outlook APIs https://docs.microsoft.com/en-us/outlook/
     #
@@ -120,26 +121,26 @@ module RubyOutlook
       end
       
       case method.upcase
-        when "GET"
-          response = conn.get do |request|
-            request.url url, params
-          end
-        when "POST"
-          conn.headers['Content-Type'] = "application/json"
-          response = conn.post do |request|
-            request.url url, params
-            request.body = JSON.dump(payload)
-          end
-        when "PATCH"
-          conn.headers['Content-Type'] = "application/json"
-          response = conn.patch do |request|
-            request.url url, params
-            request.body = JSON.dump(payload)
-          end
-        when "DELETE"
-          response = conn.delete do |request|
-            request.url url, params
-          end
+      when "GET"
+        response = conn.get do |request|
+          request.url url, params
+        end
+      when "POST"
+        conn.headers['Content-Type'] = "application/json"
+        response = conn.post do |request|
+          request.url url, params
+          request.body = JSON.dump(payload)
+        end
+      when "PATCH"
+        conn.headers['Content-Type'] = "application/json"
+        response = conn.patch do |request|
+          request.url url, params
+          request.body = JSON.dump(payload)
+        end
+      when "DELETE"
+        response = conn.delete do |request|
+          request.url url, params
+        end
       end
 
       if response.status >= 300
@@ -153,8 +154,8 @@ module RubyOutlook
             end
         end
         return JSON.dump({
-          'ruby_outlook_error' => response.status,
-          'ruby_outlook_response' => error_info })
+                             'ruby_outlook_error' => response.status,
+                             'ruby_outlook_response' => error_info })
       end
 
       response.body
@@ -171,8 +172,8 @@ module RubyOutlook
     def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
       request_url = user_context(user) << "/Contacts"
       request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
+          '$top' => view_size,
+          '$skip' => (page - 1) * view_size
       }
 
       unless fields.nil?
@@ -262,8 +263,8 @@ module RubyOutlook
     def get_messages(token, view_size, page, fields = nil, sort = nil, user = nil)
       request_url = user_context(user) << "/Messages"
       request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
+          '$top' => view_size,
+          '$skip' => (page - 1) * view_size
       }
 
       unless fields.nil?
@@ -289,8 +290,8 @@ module RubyOutlook
     def get_messages_for_folder(token, view_size, page, fields = nil, sort = nil, user = nil, folder_id)
       request_url = user_context(user) << "/MailFolders/#{folder_id}/messages"
       request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
+          '$top' => view_size,
+          '$skip' => (page - 1) * view_size
       }
 
       unless fields.nil?
@@ -393,8 +394,8 @@ module RubyOutlook
 
       # Wrap message in the sendmail JSON structure
       send_mail_json = {
-        'Message' => payload,
-        'SaveToSentItems' => save_to_sentitems
+          'Message' => payload,
+          'SaveToSentItems' => save_to_sentitems
       }
 
       send_response = make_api_call "POST", request_url, token, nil, send_mail_json
@@ -417,8 +418,8 @@ module RubyOutlook
     def get_calendars(token, view_size, page, fields = nil, sort = nil, user = nil)
       request_url = user_context(user) << "/calendars"
       request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
+          '$top' => view_size,
+          '$skip' => (page - 1) * view_size
       }
 
       unless fields.nil?
@@ -469,8 +470,8 @@ module RubyOutlook
     def get_events(token, view_size, page, fields = nil, sort = nil, user = nil)
       request_url = user_context(user) << "/Events"
       request_params = {
-        '$top' => view_size,
-        '$skip' => (page - 1) * view_size
+          '$top' => view_size,
+          '$skip' => (page - 1) * view_size
       }
 
       unless fields.nil?
@@ -510,6 +511,7 @@ module RubyOutlook
     #              If nil, the default calendar is used
     # fields (array): An array of field names to include in results
     # user (string): The user to make the call for. If nil, use the 'Me' constant.
+    # limit (int): The number of items to return. Default is 10.
     def get_calendar_view(token, window_start, window_end, id = nil, fields = nil, user = nil, limit = 10)
       request_url = user_context(user)
 
@@ -520,9 +522,9 @@ module RubyOutlook
       request_url << "/CalendarView"
 
       request_params = {
-        'startDateTime' => window_start.strftime('%Y-%m-%dT%H:%M:%SZ'),
-        'endDateTime' => window_end.strftime('%Y-%m-%dT%H:%M:%SZ'),
-        '$top' => limit
+          'startDateTime' => window_start.strftime('%Y-%m-%dT%H:%M:%SZ'),
+          'endDateTime' => window_end.strftime('%Y-%m-%dT%H:%M:%SZ'),
+          '$top' => limit
       }
 
       unless fields.nil?

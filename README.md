@@ -104,6 +104,16 @@ contacts = outlook_client.get_contacts token,
           view_size, page, fields, sort
 ```
 
+### Utilizing Microsoft Graph API
+
+It's possible to utilize Microsoft Graph instead of Microsoft Exchange by creating a client then setting the api host and version
+```ruby
+client = RubyOutlook::Client.new
+client.api_host = 'https://graph.microsoft.com/'
+client.version = '/v1.0/'
+```
+
+
 ### Extending functionality
 
 All of the built-in functions wrap the `make_api_call` function. If there is not a built-in function that suits your needs, you can use the `make_api_call` function to implement any API call you want.
