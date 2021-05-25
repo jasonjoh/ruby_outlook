@@ -10,7 +10,7 @@ module RubyOutlook
     end
 
     def sync_events(start_date_time, end_date_time, **args)
-      request_url  = "/#{user_or_me(args[:user])}#{"/calendars('#{args[:calendar_id]}')" if args[:calendar_id].present?}/calendarview"
+      request_url  = "/#{user_or_me(args[:user])}#{"/calendars('#{args[:calendar_id]}')" if args[:calendar_id].present?}/calendarView/delta"
       request_params = build_request_params(args)
 
       request_params['startDateTime'] = start_date_time.respond_to?(:iso8601) ? start_date_time.iso8601 : start_date_time
