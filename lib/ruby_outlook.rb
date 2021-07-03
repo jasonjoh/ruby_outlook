@@ -7,6 +7,7 @@ require_relative "ruby_outlook/apis/contacts"
 require_relative "ruby_outlook/apis/calendar"
 require_relative "ruby_outlook/apis/mail"
 require_relative "ruby_outlook/apis/tasks"
+require_relative "ruby_outlook/apis/file"
 
 module RubyOutlook
   extend Configuration

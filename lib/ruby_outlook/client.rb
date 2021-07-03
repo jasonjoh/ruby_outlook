@@ -33,7 +33,7 @@ module RubyOutlook
       conn.headers = {
         'Authorization' => "Bearer #{authentication_token}",
         'Accept' => "application/json",
-      
+
         # Client instrumentation
         # See https://msdn.microsoft.com/EN-US/library/office/dn720380(v=exchg.150).aspx
         'User-Agent' => user_agent,
@@ -58,6 +58,12 @@ module RubyOutlook
           response = conn.patch do |request|
             request.url request_url, params
             request.body = payload.to_json if payload.present?
+          end
+        when "PUT"
+          conn.headers['Content-Type'] = params[:content_type]
+          response = conn.put do |request|
+            request.url request_url, params
+            request.body = payload.read if payload.present?
           end
         when "DELETE"
           response = conn.delete do |request|
@@ -112,7 +118,7 @@ module RubyOutlook
       request_params['$skip']       = params[:skip]        if params[:skip].present?
       request_params['$expand']     = params[:expand]      if params[:expand].present?
       request_params['$count']      = params[:count]       if params[:count].present?    # TODO - Check these last couple for correctness
-      
+
       request_params
     end
   end
