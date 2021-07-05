@@ -17,6 +17,14 @@ module RubyOutlook
       JSON.parse(response)
     end
 
+    def get_children_items(item_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/children"
+      request_params = build_request_params(args)
+
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
+    end
+
     def get_item(item_id, **args)
       request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}"
       request_params = build_request_params(args)
