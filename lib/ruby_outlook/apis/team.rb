@@ -32,9 +32,10 @@ module RubyOutlook
       JSON.parse(response)
     end
 
-    def get_replies(team_id, channel_id, id)
+    def get_replies(team_id, channel_id, id, **args)
       request_url = "/teams/#{team_id}/channels/#{channel_id}/messages/#{id}/replies"
-      response = make_api_call(:get, request_url)
+      request_params = build_request_params(args)
+      response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
 
