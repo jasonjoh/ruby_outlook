@@ -32,6 +32,12 @@ module RubyOutlook
       JSON.parse(response)
     end
 
+    def send_reply(team_id, channel_id, id, args)
+      request_url = "/teams/#{team_id}/channels/#{channel_id}/messages/#{id}/replies"
+      response = make_api_call(:post, request_url, nil, nil, args)
+      JSON.parse(response)
+    end
+
     def get_replies(team_id, channel_id, id, **args)
       request_url = "/teams/#{team_id}/channels/#{channel_id}/messages/#{id}/replies"
       request_params = build_request_params(args)
@@ -42,6 +48,18 @@ module RubyOutlook
     def get_user(id)
       request_url = "/users/#{id}"
       response = make_api_call(:get, request_url)
+      JSON.parse(response)
+    end
+
+    def create_channel(team_id, args)
+      request_url = "/teams/#{team_id}/channels"
+      response = make_api_call(:post, request_url, nil, nil, args)
+      JSON.parse(response)
+    end
+
+    def send_message(team_id, channel_id, args)
+      request_url = "/teams/#{team_id}/channels/#{channel_id}/messages"
+      response = make_api_call(:post, request_url, nil, nil, args)
       JSON.parse(response)
     end
   end
