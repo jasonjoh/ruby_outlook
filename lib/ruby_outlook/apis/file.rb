@@ -62,5 +62,16 @@ module RubyOutlook
       JSON.parse(response)
     end
 
+    def get_revisions(item_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions"
+      response = make_api_call(:get, request_url)
+      JSON.parse(response)
+    end
+
+    def get_revision(item_id, revision_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions/#{revision_id}"
+      response = make_api_call(:get, request_url)
+      JSON.parse(response)
+    end
   end
 end
