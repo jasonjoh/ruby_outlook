@@ -16,6 +16,7 @@ module RubyOutlook
     end
   end
 
+  # https://docs.microsoft.com/en-us/graph/errors
   # 400 error
   class ClientError < Error
   end
@@ -24,12 +25,20 @@ module RubyOutlook
   class AuthorizationError < Error
   end
 
+  # 404 error
+  class RecordNotFound < Error
+  end
+
   # 429 error - application throttled over mailbox concurrency
   class RateLimitError < Error
   end
 
   # 500 error
   class ServerError < Error
+  end
+
+  # 503 error service unavailable
+  class ServiceUnavailableError < Error
   end
 
   # 554 error - cannot send mail (action needed)
