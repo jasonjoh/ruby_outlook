@@ -5,27 +5,27 @@ module RubyOutlook
       super(formatted_error_message(response))
     end
 
-    private 
+    private
 
     def formatted_error_message(response)
       if response.try(:env).present?
         "#{response.env.method.to_s.upcase} #{response.env.url}: #{response.env.status} #{response.env.body}"
       else
         response
-      end 
-    end  
+      end
+    end
   end
-  
+
   # 400 error
   class ClientError < Error
   end
 
-  # TODO
-  class RateLimitError < Error
-  end
-
   # 401 error
   class AuthorizationError < Error
+  end
+
+  # 429 error - application throttled over mailbox concurrency
+  class RateLimitError < Error
   end
 
   # 500 error
