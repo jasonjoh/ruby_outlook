@@ -37,7 +37,7 @@ module RubyOutlook
       response = make_api_call(:patch, request_url, nil, nil, event_attributes)
       JSON.parse(response)
     end
-  
+
     def delete_event(event_id, user: nil)
       request_url  = "/#{user_or_me(user)}/events/#{event_id}"
 
@@ -49,10 +49,10 @@ module RubyOutlook
       action = action.to_s.downcase
 
       raise RubyOutlook::ClientError.new("#{action} is invalid. Valid actions are accept, tentativelyaccept, or decline.") unless ['accept', 'tentativelyaccept', 'decline'].include?(action)
-      
+
       update_event_response(action, event_id, user, comment, send_response)
     end
-  
+
     # TODO - fix
     # token (string): access token
     # view_size (int): maximum number of results
@@ -129,6 +129,17 @@ module RubyOutlook
       JSON.parse(get_view_response)
     end
 
+    def get_event_instances(start_date_time, end_date_time, **args)
+      request_url  = "/#{user_or_me(args[:user])}/events/#{args[:id]}/instances"
+      request_params = build_request_params(args)
+
+      request_params['startDateTime'] = start_date_time.respond_to?(:iso8601) ? start_date_time.iso8601 : start_date_time
+      request_params['endDateTime']   = end_date_time.respond_to?(:iso8601)   ? end_date_time.iso8601   : end_date_time
+
+      response = make_api_call(:get, request_url, request_params, request_params)
+      JSON.parse(response)
+    end
+
     private
 
     def update_event_response(action, event_id, user, comment, send_response)
@@ -139,9 +150,9 @@ module RubyOutlook
       event_attributes['SendResponse'] = send_response if [true, false].include?(send_response)
 
       response = make_api_call(:post, request_url, nil, nil, event_attributes)
-  
-      return nil if response.blank?    
-  
+
+      return nil if response.blank?
+
       JSON.parse(response)
     end
   end
