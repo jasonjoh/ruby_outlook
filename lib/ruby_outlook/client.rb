@@ -92,7 +92,7 @@ module RubyOutlook
       when 401, 403
         raise RubyOutlook::AuthorizationError.new(response)
       when 404
-        raise RubyOutlook::MailboxNotEnabled if response.body.include? 'MailboxNotEnabledForRESTAPI'
+        raise RubyOutlook::MailboxNotEnabled.new(response) if response.body.include? 'MailboxNotEnabledForRESTAPI'
         raise RubyOutlook::RecordNotFound.new(response)
       when 429
         raise RubyOutlook::RateLimitError.new(response)
