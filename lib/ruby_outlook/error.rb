@@ -29,6 +29,10 @@ module RubyOutlook
   class RecordNotFound < Error
   end
 
+  # "code":"MailboxNotEnabledForRESTAPI","message":"The mailbox is either inactive, soft-deleted, or is hosted on-premise
+  class MailboxNotEnabled < Error
+  end
+
   # 429 error - application throttled over mailbox concurrency
   class RateLimitError < Error
   end
