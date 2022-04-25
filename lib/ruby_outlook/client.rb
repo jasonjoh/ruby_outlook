@@ -125,6 +125,7 @@ module RubyOutlook
       request_params['$skip']       = params[:skip]        if params[:skip].present?
       request_params['$expand']     = params[:expand]      if params[:expand].present?
       request_params['$count']      = params[:count]       if params[:count].present?    # TODO - Check these last couple for correctness
+      request_params['$filter']     = "singleValueExtendedProperties/Any(ep:ep/id eq 'String {#{params[:single_value_extended_properties][:guid]}} Name #{params[:single_value_extended_properties][:name]}' and ep/value eq '#{params[:single_value_extended_properties][:value]}')" if params[:single_value_extended_properties].present?
 
       request_params
     end

@@ -1,18 +1,25 @@
 module RubyOutlook
   class Client
-    
+
     def get_messages(**args)
       request_url  = "/#{user_or_me(args[:user])}/messages/delta"
-      request_params = build_request_params(args)      
+      request_params = build_request_params(args)
 
       response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
-    
+
+    def get_messages_with_filters(**args)
+      request_url = "/#{user_or_me(args[:user])}/messages"
+      request_params = build_request_params(args)
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
+    end
+
     def get_attachments_for(message_id, **args)
       request_url = "/#{user_or_me(args[:user])}/messages/#{message_id}/attachments"
       request_params = build_request_params(args)
-      
+
       response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
@@ -20,7 +27,7 @@ module RubyOutlook
     def get_messages_for_folder(folder_id, **args)
       request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages/delta"
       request_params = build_request_params(args)
-      
+
       response = make_api_call(:get, request_url, request_params)
       JSON.parse(response)
     end
@@ -28,7 +35,7 @@ module RubyOutlook
     def synchonize_messages_for_folder(folder_id, **args)
       request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages/delta"
       request_params = build_request_params(args)
-      
+
       headers = {
         'Prefer' => ['odata.track-changes', "odata.maxpagesize=#{args[:max_page_size].presence || 50}"]
       }
@@ -48,7 +55,7 @@ module RubyOutlook
 
     def create_message(message_attributes, folder_id: nil, user: nil)
       request_url = "/#{user_or_me(user)}#{"/folders/#{folder_id}" if folder_id.present? }/messages"
-  
+
       response = make_api_call(:post, request_url, nil, nil, message_attributes)
       JSON.parse(response)
     end
@@ -102,11 +109,11 @@ module RubyOutlook
 
     def send_draft(message_id, user: nil)
       request_url = "/#{user_or_me(user)}/messages/#{message_id}/send"
-      
+
       response = make_api_call(:post, request_url)
       JSON.parse(response) if response.present?
     end
-  
+
     # Quick Reply (does not return the response message)
     def reply_all(message_id, comment, message: nil, user: nil)
       request_url = "/#{user_or_me(user)}/messages/#{message_id}/replyall"
