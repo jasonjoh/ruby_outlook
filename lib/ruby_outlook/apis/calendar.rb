@@ -45,6 +45,13 @@ module RubyOutlook
       JSON.parse(response) if response.present?
     end
 
+    def get_event_by_id(event_id, user: nil)
+      request_url = "/#{user_or_me(user)}/events/#{event_id}"
+
+      response = make_api_call(:get, request_url)
+      JSON.parse(response) if response.present?
+    end
+
     def respond_to_event(event_id, action, user: nil, comment: nil, send_response: nil)
       action = action.to_s.downcase
 
@@ -78,24 +85,6 @@ module RubyOutlook
       get_events_response = make_api_call "GET", request_url, token, request_params
 
       JSON.parse(get_events_response)
-    end
-
-    # TODO - fix
-    # token (string): access token
-    # id (string): The Id of the event to retrieve
-    # fields (array): An array of field names to include in results
-    # user (string): The user to make the call for. If nil, use the 'Me' constant.
-    def get_event_by_id(token, id, fields = nil, user = nil)
-      request_url = "/api/v2.0/" << (user.nil? ? "Me" : ("users/" << user)) << "/Events/" << id
-      request_params = nil
-
-      unless fields.nil?
-        request_params = { '$select' => fields.join(',') }
-      end
-
-      get_event_response = make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_event_response)
     end
 
     # TODO - fix
