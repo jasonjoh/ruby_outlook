@@ -24,6 +24,15 @@ module RubyOutlook
       JSON.parse(response)
     end
 
+
+    def get_calendar_attachments_for(event_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/events/#{event_id}/attachments"
+      request_params = build_request_params(args)
+
+      response = make_api_call(:get, request_url, request_params)
+      JSON.parse(response)
+    end
+
     def create_event(event_attributes, calendar_id: nil, user: nil)
       request_url  = "/#{user_or_me(user)}#{"/calendars('#{calendar_id}')" if calendar_id.present?}/events"
 
