@@ -73,5 +73,11 @@ module RubyOutlook
       response = make_api_call(:get, request_url)
       JSON.parse(response)
     end
+    
+    def get_permissions(item_id, **args)
+      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/permissions"
+      response = make_api_call(:get, request_url)
+      JSON.parse(response)
+    end
   end
 end
