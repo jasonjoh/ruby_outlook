@@ -89,8 +89,13 @@ module RubyOutlook
         response.body
       when 400, 405..409, 411..423
         raise RubyOutlook::ClientError.new(response)
-      when 410
-        raise RubyOutlook::SyncStateInvalid.new(response)
+      when 410 # official doc says 'gone' - but we only see these for sync tokens that are in a bad state - we'll handle those specifically and throw everything else
+        body = response.body
+        if body.include?('SyncStateInvalid') || body.include?('SyncStateNotFound') || body.include?('Badly formed token')
+          raise RubyOutlook::SyncStateInvalid.new(response)
+        else
+          raise RubyOutlook::ClientError.new(response)
+        end
       when 401, 403
         raise RubyOutlook::AuthorizationError.new(response)
       when 404
