@@ -29,6 +29,10 @@ module RubyOutlook
   class RecordNotFound < Error
   end
 
+  # 410 sync state invalid - do a full resync
+  class SyncStateInvalid < Error
+  end
+
   # "code":"MailboxNotEnabledForRESTAPI","message":"The mailbox is either inactive, soft-deleted, or is hosted on-premise
   class MailboxNotEnabled < Error
   end

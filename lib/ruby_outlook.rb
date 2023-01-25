@@ -18,7 +18,6 @@ module RubyOutlook
     RubyOutlook::Client.new(options)
   end
 
-  # Delegate to RubyOutlook::Client
   def self.method_missing(method, *args, &block)
     return super unless client.respond_to?(method)
     client.send(method, *args, &block)
