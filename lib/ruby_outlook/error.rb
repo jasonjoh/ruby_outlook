@@ -33,6 +33,10 @@ module RubyOutlook
   class SyncStateInvalid < Error
   end
 
+  # badly formed token
+  class SyncStateBadToken < SyncStateInvalid
+  end
+
   # "code":"MailboxNotEnabledForRESTAPI","message":"The mailbox is either inactive, soft-deleted, or is hosted on-premise
   class MailboxNotEnabled < Error
   end
