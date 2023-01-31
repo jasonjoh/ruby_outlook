@@ -2,7 +2,7 @@ module RubyOutlook
   class Client
 
     def get_messages(**args)
-      request_url  = "/#{user_or_me(args[:user])}/messages/delta"
+      request_url  = "/#{user_or_me(args[:user])}/messages"
       request_params = build_request_params(args)
 
       response = make_api_call(:get, request_url, request_params)
@@ -25,7 +25,7 @@ module RubyOutlook
     end
 
     def get_messages_for_folder(folder_id, **args)
-      request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages/delta"
+      request_url = "/#{user_or_me(args[:user])}/MailFolders/#{folder_id}/messages"
       request_params = build_request_params(args)
 
       response = make_api_call(:get, request_url, request_params)
