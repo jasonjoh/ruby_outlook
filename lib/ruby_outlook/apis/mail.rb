@@ -114,6 +114,13 @@ module RubyOutlook
       JSON.parse(response) if response.present?
     end
 
+    def get_folders(user: nil)
+      request_url = "/#{user_or_me(user)}/mailFolders"
+
+      response = make_api_call(:get, request_url)
+      JSON.parse(response) if response.present?
+    end
+
     # Quick Reply (does not return the response message)
     def reply_all(message_id, comment, message: nil, user: nil)
       request_url = "/#{user_or_me(user)}/messages/#{message_id}/replyall"
