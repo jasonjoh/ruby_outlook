@@ -2,44 +2,37 @@ module RubyOutlook
   class Client
 
     def get_drive(**args)
-      request_url  = "/#{user_or_me(args[:user])}/drive"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, "/#{user_or_me(args[:user])}/drive", request_params)
     end
 
     def get_items(drive_id, **args)
       request_url = "/#{user_or_me(args[:user])}/drives/#{drive_id}/root/children"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params)
     end
 
     def get_children_items(item_id, **args)
       request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/children"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params)
     end
 
     def get_item(item_id, **args)
       request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params)
     end
 
     def delete_item(item_id, user=nil)
-      request_url = "/#{user_or_me(user)}/drive/items/#{item_id}"
-
-      response = make_api_call(:delete, request_url)
+      response = make_api_call(:delete, "/#{user_or_me(user)}/drive/items/#{item_id}")
 
       return nil if response.blank?
-      JSON.parse(response)
+      response
     end
 
     def create_item(path, **args)
@@ -48,8 +41,7 @@ module RubyOutlook
       content_type = MIME::Types.type_for(path).first.content_type
       request_url = "/#{user_or_me(args[:user])}/drive/items/root:/#{filename}:/content"
 
-      response = make_api_call(:put, request_url, { content_type: content_type }, nil, file)
-      JSON.parse(response)
+      make_api_call(:put, request_url, { content_type: content_type }, nil, file)
     end
 
     def update_item(item_id, path, **args)
@@ -58,26 +50,19 @@ module RubyOutlook
 
       request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/content"
 
-      response = make_api_call(:put, request_url, { content_type: content_type }, nil, file)
-      JSON.parse(response)
+      make_api_call(:put, request_url, { content_type: content_type }, nil, file)
     end
 
     def get_revisions(item_id, **args)
-      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions"
-      response = make_api_call(:get, request_url)
-      JSON.parse(response)
+      make_api_call(:get, "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions")
     end
 
     def get_revision(item_id, revision_id, **args)
-      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions/#{revision_id}"
-      response = make_api_call(:get, request_url)
-      JSON.parse(response)
+      make_api_call(:get, "/#{user_or_me(args[:user])}/drive/items/#{item_id}/versions/#{revision_id}")
     end
-    
+
     def get_permissions(item_id, **args)
-      request_url = "/#{user_or_me(args[:user])}/drive/items/#{item_id}/permissions"
-      response = make_api_call(:get, request_url)
-      JSON.parse(response)
+      make_api_call(:get, "/#{user_or_me(args[:user])}/drive/items/#{item_id}/permissions")
     end
   end
 end

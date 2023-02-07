@@ -5,8 +5,7 @@ module RubyOutlook
       request_url  = "/#{user_or_me(args[:user])}#{"/calendargroups/#{args[:calendar_group_id]}" if args[:calendar_group_id].present?}/calendars"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params)
     end
 
     def sync_events(start_date_time, end_date_time, **args)
@@ -20,8 +19,7 @@ module RubyOutlook
         'Prefer' => ['odata.track-changes', "odata.maxpagesize=#{args[:max_page_size].presence || 50}"]
       }
 
-      response = make_api_call(:get, request_url, request_params, headers)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params, headers)
     end
 
 
@@ -29,36 +27,27 @@ module RubyOutlook
       request_url = "/#{user_or_me(args[:user])}/events/#{event_id}/attachments"
       request_params = build_request_params(args)
 
-      response = make_api_call(:get, request_url, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params)
     end
 
     def create_event(event_attributes, calendar_id: nil, user: nil)
       request_url  = "/#{user_or_me(user)}#{"/calendars('#{calendar_id}')" if calendar_id.present?}/events"
 
-      response = make_api_call(:post, request_url, nil, nil, event_attributes)
-      JSON.parse(response)
+      make_api_call(:post, request_url, nil, nil, event_attributes)
     end
 
     def update_event(event_id, event_attributes, user: nil)
-      request_url  = "/#{user_or_me(user)}/events/#{event_id}"
-
-      response = make_api_call(:patch, request_url, nil, nil, event_attributes)
-      JSON.parse(response)
+      make_api_call(:patch, "/#{user_or_me(user)}/events/#{event_id}", nil, nil, event_attributes)
     end
 
     def delete_event(event_id, user: nil)
-      request_url  = "/#{user_or_me(user)}/events/#{event_id}"
-
-      response = make_api_call(:delete, request_url)
-      JSON.parse(response) if response.present?
+      response = make_api_call(:delete, "/#{user_or_me(user)}/events/#{event_id}")
+      response if response.present?
     end
 
     def get_event_by_id(event_id, user: nil)
-      request_url = "/#{user_or_me(user)}/events/#{event_id}"
-
-      response = make_api_call(:get, request_url)
-      JSON.parse(response) if response.present?
+      response = make_api_call(:get, "/#{user_or_me(user)}/events/#{event_id}")
+      response if response.present?
     end
 
     def respond_to_event(event_id, action, user: nil, comment: nil, send_response: nil)
@@ -91,9 +80,7 @@ module RubyOutlook
         request_params['$orderby'] = sort[:sort_field] + " " + sort[:sort_order]
       end
 
-      get_events_response = make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_events_response)
+      make_api_call "GET", request_url, token, request_params
     end
 
     # TODO - fix
@@ -122,9 +109,7 @@ module RubyOutlook
         request_params['$select'] = fields.join(',')
       end
 
-      get_view_response =make_api_call "GET", request_url, token, request_params
-
-      JSON.parse(get_view_response)
+      make_api_call "GET", request_url, token, request_params
     end
 
     def get_event_instances(start_date_time, end_date_time, **args)
@@ -134,8 +119,7 @@ module RubyOutlook
       request_params['startDateTime'] = start_date_time.respond_to?(:iso8601) ? start_date_time.iso8601 : start_date_time
       request_params['endDateTime']   = end_date_time.respond_to?(:iso8601)   ? end_date_time.iso8601   : end_date_time
 
-      response = make_api_call(:get, request_url, request_params, request_params)
-      JSON.parse(response)
+      make_api_call(:get, request_url, request_params, request_params)
     end
 
     private
@@ -151,7 +135,7 @@ module RubyOutlook
 
       return nil if response.blank?
 
-      JSON.parse(response)
+      response
     end
   end
 end

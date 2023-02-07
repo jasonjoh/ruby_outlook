@@ -10,8 +10,8 @@ module RubyOutlook
 
     DEFAULT_AUTHENTICATION_TOKEN = nil
     DEFAULT_ENABLE_FIDDLER       = false
-    DEFAULT_ENDPOINT             = '/api/v2.0'.freeze
-    DEFAULT_HOST                 = 'https://outlook.office365.com'.freeze
+    DEFAULT_ENDPOINT             = '/v1.0'.freeze
+    DEFAULT_HOST                 = 'https://graph.microsoft.com'.freeze
     DEFAULT_USER_AGENT           = "RubyOutlookGem/#{RubyOutlook::VERSION}".freeze
 
     attr_accessor *VALID_OPTIONS_KEYS

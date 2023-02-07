@@ -14,79 +14,57 @@ module RubyOutlook
     end
 
     def make_api_call(method, path, params = nil, headers = nil, payload = nil)
+      handle_response perform_request(method, path, params, headers, payload)
+    end
+
+    # private
+
+    def perform_request(method, path, params, headers, payload)
       request_url = endpoint + path
 
-      conn_params = {
-        :url => host
-      }
+      conn_params = {:url => host}
 
       if enable_fiddler
         conn_params[:proxy] = 'http://127.0.0.1:8888'
         conn_params[:ssl] = { :verify => false }
       end
 
-      conn = Faraday.new(conn_params) do |faraday|
-        # Uses the default Net::HTTP adapter
-        faraday.adapter  Faraday.default_adapter
-      end
+      conn = connection(params)
+      conn.headers = basic_headers.merge!(headers.to_h)
 
-      conn.headers = {
-        'Authorization' => "Bearer #{authentication_token}",
-        'Accept' => "application/json",
-
-        # Client instrumentation
-        # See https://msdn.microsoft.com/EN-US/library/office/dn720380(v=exchg.150).aspx
-        'User-Agent' => user_agent,
-        'client-request-id' => UUIDTools::UUID.timestamp_create.to_str,
-        'return-client-request-id' => "true"
-      }.merge!(headers.to_h)
-
-      # TODO - symbols
       case method.to_s.upcase
-        when "GET"
-          response = conn.get do |request|
-            request.url request_url, params
-          end
-        when "POST"
-          conn.headers['Content-Type'] = "application/json"
-          response = conn.post do |request|
-            request.url request_url, params
-            request.body = payload.to_json if payload.present?
-          end
-        when "PATCH"
-          conn.headers['Content-Type'] = "application/json"
-          response = conn.patch do |request|
-            request.url request_url, params
-            request.body = payload.to_json if payload.present?
-          end
-        when "PUT"
-          conn.headers['Content-Type'] = params[:content_type]
-          response = conn.put do |request|
-            request.url request_url, params
-            request.body = payload.read if payload.present?
-          end
-        when "DELETE"
-          response = conn.delete do |request|
-            request.url request_url, params
-          end
+      when "GET"
+        conn.get do |request|
+          request.url request_url, params
+        end
+      when "POST"
+        conn.post do |request|
+          request.url request_url, params
+          request.body = payload.to_json if payload.present?
+        end
+      when "PATCH"
+        conn.patch do |request|
+          request.url request_url, params
+          request.body = payload.to_json if payload.present?
+        end
+      when "PUT"
+        conn.put do |request|
+          request.url request_url, params
+          request.body = payload.read if payload.present?
+        end
+      when "DELETE"
+        conn.delete do |request|
+          request.url request_url, params
+        end
+      else
+        raise "Unhandled method #{method}"
       end
+    end
 
-      # TODO - remove
-      #p response
-      #p response.headers
-      #puts ".."
-      #p response.body
-      #puts ".."
-      #puts response.env
-      #puts "===\n\n"
-
-      # To Demo verifcation error
-      #
-      #raise RubyOutlook::MailError.new("POST https://outlook.office365.com/api/beta/Me/messages/AQMkADAwATNiZmYAZC1lOWE1LTgxZDAtMDACLTAwCgBGAAAD9ZqXqLmCeU_WJdvX85wSmQcA--dVSMxFoUWBXcVxy_0enwAAAgEPAAAA--dVSMxFoUWBXcVxy_0enwAAAAOrd5IAAAA=/send: 554 {\"error\":{\"code\":\"ErrorMessageSubmissionBlocked\",\"message\":\"Cannot send mail. Follow the instructions in your Inbox to verify your account., WASCL UserAction verdict is not None. Actual verdict is HipSend, ShowTierUpgrade.\"}}")
-
+    def handle_response(response)
       case response.status
       when 200..399
-        response.body
+        JSON.parse response.body # TODO: return a return class/object with some helpers
       when 400, 405..409, 411..423
         if response.body.include?('Badly formed token') # this should only happen in a 400
           raise RubyOutlook::SyncStateBadToken.new(response)
@@ -118,10 +96,29 @@ module RubyOutlook
       end
     end
 
-    private
-
     def user_or_me(user)
       user.present? ? "users/#{user}" : "Me"
+    end
+
+    def basic_headers
+      {
+        'Authorization' => "Bearer #{authentication_token}",
+        'Accept' => "application/json",
+
+        # Client instrumentation
+        # See https://msdn.microsoft.com/EN-US/library/office/dn720380(v=exchg.150).aspx
+        'User-Agent' => user_agent,
+        'client-request-id' => UUIDTools::UUID.timestamp_create.to_str,
+        'return-client-request-id' => "true",
+        'Content-Type' => "application/json"
+      }
+    end
+
+    def connection(params)
+      Faraday.new(params) do |faraday|
+        # Uses the default Net::HTTP adapter
+        faraday.adapter  Faraday.default_adapter
+      end
     end
 
     def build_request_params(params)

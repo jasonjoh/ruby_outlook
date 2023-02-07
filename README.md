@@ -66,7 +66,7 @@ def get_token_from_code(auth_code)
 
   token = client.auth_code.get_token(auth_code,
                                      :redirect_uri => "http://yourapp.com/authorize",
-                                     :resource => 'https://outlook.office365.com')
+                                     :resource => 'https://graph.microsoft.com')
 
   access_token = token
 end
@@ -142,7 +142,6 @@ def get_contacts(token, view_size, page, fields = nil, sort = nil, user = nil)
 end
 ```
 
-Follow the same pattern to implement your own calls.
 
 ## Contributing
 
@@ -152,11 +151,4 @@ Follow the same pattern to implement your own calls.
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-## Copyright ##
 
-Copyright (c) Microsoft. All rights reserved.
-
-----------
-Connect with me on Twitter [@JasonJohMSFT](https://twitter.com/JasonJohMSFT)
-
-Follow the [Exchange Dev Blog](http://blogs.msdn.com/b/exchangedev/)
