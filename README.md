@@ -1,5 +1,8 @@
 # RubyOutlook
 
+> [!IMPORTANT]
+> The Office 365 Outlook APIs have been [deprecated since November 2020](https://devblogs.microsoft.com/microsoft365dev/outlook-rest-api-v2-0-deprecation-notice/). This project is no longer maintained and shouldn't be used. Apps should transition to using the Outlook-related APIs in Microsoft Graph. See [Moving from Outlook endpoint to Microsoft Graph](https://learn.microsoft.com/outlook/rest/compare-graph#moving-from-outlook-endpoint-to-microsoft-graph) for details.
+
 The RubyOutlook gem is a light-weight implementation of the Office 365 [Mail](https://msdn.microsoft.com/office/office365/APi/mail-rest-operations), [Calendar](https://msdn.microsoft.com/office/office365/APi/calendar-rest-operations), and [Contacts](https://msdn.microsoft.com/office/office365/APi/contacts-rest-operations) REST APIs. It provides basic CRUD functionality for all three APIs, along with the ability to extend functionality by making any arbitrary API call.
 
 For a sample app that uses this gem, see the [Office 365 VCF Import/Export Sample](https://github.com/jasonjoh/o365-vcftool).
